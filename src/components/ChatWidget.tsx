@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { injectGlobal } from '@emotion/css'
 import { ChatConfig } from '../types'
 import { loadVisitorId } from '../lib/upload'
@@ -19,7 +19,6 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config }) => {
   const [isOpen, setIsOpen] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
   const [view, setView] = useState<View>('home')
-  const [buttonEdge, setButtonEdge] = useState<'left' | 'right'>('right')
 
   const reset = useChatStore((s) => s.reset)
 
@@ -37,21 +36,26 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config }) => {
     setView('chat')
   }
 
-  const handleClose = () => setIsOpen(false)
+  useEffect(() => {
+    const isMobile = window.innerWidth <= 480
+    if (isMobile) {
+      document.body.style.overflow = isOpen ? 'hidden' : ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [isOpen])
 
   return (
     <>
       <FloatingButton
         isOpen={isOpen}
         onToggle={() => setIsOpen((p) => !p)}
-        onEdgeChange={setButtonEdge}
       />
 
       <ChatPanel
         isOpen={isOpen}
         isExpanded={isExpanded}
-        buttonEdge={buttonEdge}
-        onClose={handleClose}
       >
         {view === 'home' ? (
           <HomeScreen

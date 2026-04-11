@@ -1,26 +1,22 @@
 import React from 'react'
 import { css } from '@emotion/css'
 
-type Edge = 'left' | 'right'
-
 interface Props {
   isOpen: boolean
   isExpanded: boolean
-  buttonEdge: Edge
-  onClose: () => void
   children: React.ReactNode
 }
 
-export const ChatPanel: React.FC<Props> = ({ isOpen, isExpanded, buttonEdge, onClose, children }) => {
+export const ChatPanel: React.FC<Props> = ({ isOpen, isExpanded, children }) => {
   return (
-    <div data-wds-root className={styles.panel(isOpen, isExpanded, buttonEdge)}>
+    <div data-wds-root className={styles.panel(isOpen, isExpanded)}>
       <div className={styles.inner}>{children}</div>
     </div>
   )
 }
 
 const styles = {
-  panel: (isOpen: boolean, isExpanded: boolean, buttonEdge: Edge) => css`
+  panel: (isOpen: boolean, isExpanded: boolean) => css`
     position: fixed;
     bottom: 86px;
     z-index: 999998;
@@ -45,7 +41,7 @@ const styles = {
       height: 620px;
       border-radius: 20px;
       box-shadow: 0 12px 48px rgba(0,0,0,0.16), 0 2px 8px rgba(0,0,0,0.08);
-      ${buttonEdge === 'right' ? 'right: 22px;' : 'left: 22px;'}
+      right: 22px;
       transform: ${isOpen ? 'translateY(0) scale(1)' : 'translateY(16px) scale(0.97)'};
     `}
 

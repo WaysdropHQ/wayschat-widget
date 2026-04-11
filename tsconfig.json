@@ -8,8 +8,7 @@
     "declaration": true,
     "strict": true,
     "rootDir": "./src",
-    "outDir": "dist",
-    "ignoreDeprecations": "6.0"
+    "outDir": "dist"
   },
   "include": ["src"]
 }

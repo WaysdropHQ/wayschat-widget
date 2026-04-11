@@ -31,7 +31,7 @@ export const ChatScreen: React.FC<Props> = ({
   const [showScrollBtn, setShowScrollBtn] = useState(false)
 
   const lastMsg = messages[messages.length - 1]
-  const isThinking = connected && lastMsg?.direction === 'INBOUND'
+  const isThinking = connected && lastMsg?.direction === 'OUTBOUND'
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
