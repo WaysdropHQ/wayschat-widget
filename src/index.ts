@@ -1,0 +1,6 @@
+export { ChatWidget } from './components/ChatWidget'
+export type { ChatWidgetProps } from './components/ChatWidget'
+export { useChat } from './hooks/useChat'
+export { useChatStore } from './store/chatStore'
+export { loadVisitorId, saveVisitorId, clearVisitorId } from './lib/upload'
+export * from './types'
