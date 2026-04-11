@@ -9,7 +9,7 @@ const markdownStyle = css`
   text-align: left;
 
   p {
-    margin: 0 0 0.5rem 0;
+    margin: 0 0 0.6rem 0;
     text-align: left;
   }
   p:last-child {
@@ -17,14 +17,29 @@ const markdownStyle = css`
   }
   strong { font-weight: 600; }
   em { font-style: italic; }
+
   ul, ol {
-    margin: 0.25rem 0 0.5rem 0;
-    padding-left: 1.25rem;
+    margin: 0.4rem 0 0.6rem 0;
+    padding-left: 1.4rem;
     text-align: left;
   }
   ul { list-style-type: disc; }
   ol { list-style-type: decimal; }
-  li { margin-bottom: 0.2rem; }
+  li {
+    margin-bottom: 0.3rem;
+  }
+  li > ul, li > ol {
+    margin: 0.25rem 0 0.25rem 0;
+    padding-left: 1.2rem;
+  }
+  li:last-child { margin-bottom: 0; }
+
+  hr {
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.25);
+    margin: 0.75rem 0;
+  }
+
   code {
     font-family: monospace;
     font-size: 0.8rem;
@@ -56,7 +71,7 @@ const markdownStyle = css`
   }
   h1, h2, h3 {
     font-weight: 600;
-    margin: 0.5rem 0 0.25rem;
+    margin: 0.6rem 0 0.3rem;
     line-height: 1.3;
     text-align: left;
   }

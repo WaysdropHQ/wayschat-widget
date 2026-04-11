@@ -12,7 +12,7 @@ interface Props {
 }
 
 export const MessageBubble: React.FC<Props> = ({ message }) => {
-  const isCustomer = message.direction === 'INBOUND'
+  const isCustomer = message.direction === 'OUTBOUND'
   const isBot = message.senderRole === 'BOT'
 
   return (
