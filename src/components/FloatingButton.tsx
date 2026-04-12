@@ -89,7 +89,8 @@ const styles = {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: opacity 0.2s, transform 0.2s;
+    transition: opacity 0.15s, transform 0.15s;
+    transition-delay: ${visible ? '0.1s' : '0s'};
     opacity: ${visible ? 1 : 0};
     transform: ${visible ? 'scale(1)' : 'scale(0.6) rotate(30deg)'};
     pointer-events: ${visible ? 'auto' : 'none'};
