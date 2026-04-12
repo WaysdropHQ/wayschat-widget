@@ -1,18 +1,14 @@
-# ways-chat
+# @waysdrop/chat
 
-Internal chat widget package for Waysdrop. Provides a floating support chat UI backed by Socket.IO — drop it into any React app with a single component.
+A floating support chat widget for React apps, backed by Socket.IO.
 
 ---
 
 ## Installation
 
-This is a private GitHub package. Your machine needs access to the `WaysdropHQ` GitHub org.
-
 ```bash
-npm install github:WaysdropHQ/ways-chat#v1.0.0
+npm install @waysdrop/chat
 ```
-
-Pin to a specific tag always. Avoid `#main` in production.
 
 **Peer dependencies** — install these if not already in your project:
 
@@ -25,7 +21,7 @@ npm install react react-dom
 ## Usage
 
 ```tsx
-import { ChatWidget } from 'ways-chat'
+import { ChatWidget } from '@waysdrop/chat'
 
 export default function App() {
   return (
@@ -57,7 +53,7 @@ type ChatConfig = {
 **Visitor flow** — when `token` is omitted, the widget assigns the user a `visitorId` on first connect and persists it to `localStorage` automatically. On subsequent loads, it reads it back. You can also manage this yourself:
 
 ```ts
-import { loadVisitorId, saveVisitorId, clearVisitorId } from 'ways-chat'
+import { loadVisitorId, saveVisitorId, clearVisitorId } from '@waysdrop/chat'
 
 loadVisitorId()        // reads from localStorage
 saveVisitorId(id)      // writes to localStorage
@@ -123,20 +119,15 @@ type SocketError = {
 
 ## Versioning
 
-After changes, bump the version and push a new tag:
+After changes, bump the version and publish:
 
 ```bash
 npm version patch   # bug fix
 npm version minor   # new feature
 npm version major   # breaking change
 
+npm publish --access public
 git push origin main --tags
-```
-
-Consuming projects update their reference:
-
-```json
-"ways-chat": "github:WaysdropHQ/ways-chat#v1.0.1"
 ```
 
 ---
