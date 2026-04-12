@@ -18,7 +18,7 @@ export const MessageBubble: React.FC<Props> = ({ message }) => {
   return (
     <div className={styles.row(isCustomer)}>
       <div className={styles.group(isCustomer)}>
-        {isBot && <span className={styles.botLabel}>Ways AI</span>}
+        {isBot && <span className={styles.botLabel}>Support</span>}
         <div className={styles.bubble(isCustomer)}>
           {message.file && (
             <a href={message.file} target="_blank" rel="noreferrer" className={styles.fileLink(!!message.content)}>

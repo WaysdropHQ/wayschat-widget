@@ -74,7 +74,7 @@ export const ChatInput: React.FC<Props> = ({ onSendText, onSendFile, disabled, i
             <span className={styles.dot(1)} />
             <span className={styles.dot(2)} />
           </div>
-          <span className={styles.thinkingLabel}>Ways AI is typing...</span>
+          <span className={styles.thinkingLabel}>Waiting for response..</span>
         </div>
       )}
 
