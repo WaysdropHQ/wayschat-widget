@@ -1,6 +1,6 @@
 {
   "name": "@waysdrop/chat",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Floating support chat widget for React apps",
   "license": "UNLICENSED",
   "homepage": "https://waysdrop.com",
@@ -8,14 +8,19 @@
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "sideEffects": ["./dist/index.js", "./dist/index.cjs"],
+  "sideEffects": [
+    "./dist/index.js",
+    "./dist/index.cjs"
+  ],
   "exports": {
     ".": {
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
