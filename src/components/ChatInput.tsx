@@ -12,7 +12,7 @@ const pulse = keyframes`
 
 interface Props {
   onSendText: (content: string) => void
-  onSendFile: (file: File) => Promise<void>
+  onSendFile: (file: File, content?: string) => Promise<void>
   disabled?: boolean
   isThinking?: boolean
 }
@@ -31,14 +31,13 @@ export const ChatInput: React.FC<Props> = ({ onSendText, onSendFile, disabled, i
 
     if (pendingFile) {
       setUploading(true)
-      onSendFile(pendingFile).finally(() => {
+      onSendFile(pendingFile, trimmed || undefined).finally(() => {
         setUploading(false)
         setPendingFile(null)
         setPendingPreview(null)
+        setValue('')
       })
-    }
-
-    if (trimmed) {
+    } else if (trimmed) {
       onSendText(trimmed)
       setValue('')
     }

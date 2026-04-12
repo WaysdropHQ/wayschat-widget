@@ -1,18 +1,18 @@
-import React, { useEffect, useRef, useState } from 'react'
-import { css, keyframes } from '@emotion/css'
-import { ChatMessage } from '../types'
-import { MessageBubble } from './MessageBubble'
-import { ChatInput } from './ChatInput'
+import React, { useEffect, useRef, useState } from "react";
+import { css, keyframes } from "@emotion/css";
+import { ChatMessage } from "../types";
+import { MessageBubble } from "./MessageBubble";
+import { ChatInput } from "./ChatInput";
 
 interface Props {
-  messages: ChatMessage[]
-  onSendText: (content: string) => void
-  onSendFile: (file: File) => Promise<void>
-  onBack: () => void
-  onExpand: () => void
-  isExpanded: boolean
-  status: string
-  error: { code: number; message: string } | null
+  messages: ChatMessage[];
+  onSendText: (content: string) => void;
+  onSendFile: (file: File, content?: string) => Promise<void>;
+  onBack: () => void;
+  onExpand: () => void;
+  isExpanded: boolean;
+  status: string;
+  error: { code: number; message: string } | null;
 }
 
 export const ChatScreen: React.FC<Props> = ({
@@ -25,56 +25,93 @@ export const ChatScreen: React.FC<Props> = ({
   status,
   error,
 }) => {
-  const bottomRef = useRef<HTMLDivElement>(null)
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const connected = status === 'connected'
-  const [showScrollBtn, setShowScrollBtn] = useState(false)
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const connected = status === "connected";
+  const [showScrollBtn, setShowScrollBtn] = useState(false);
 
-  const lastMsg = messages[messages.length - 1]
-  const isThinking = connected && lastMsg?.direction === 'INBOUND'
+  const lastMsg = messages[messages.length - 1];
+  const isThinking = connected && lastMsg?.direction === "INBOUND";
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const handleScroll = () => {
-    const el = scrollRef.current
-    if (!el) return
-    setShowScrollBtn(el.scrollHeight - el.scrollTop - el.clientHeight > 80)
-  }
+    const el = scrollRef.current;
+    if (!el) return;
+    setShowScrollBtn(el.scrollHeight - el.scrollTop - el.clientHeight > 80);
+  };
 
   return (
     <div className={styles.wrapper}>
       <div className={styles.header}>
         <button className={styles.iconBtn} onClick={onBack}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="15 18 9 12 15 6"/>
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <polyline points="15 18 9 12 15 6" />
           </svg>
         </button>
 
         <div className={styles.headerCenter}>
           <span className={styles.headerTitle}>Support</span>
           <span className={styles.statusDot(connected)} />
-          <span className={styles.statusLabel}>{connected ? 'Online' : 'Connecting...'}</span>
+          <span className={styles.statusLabel}>
+            {connected ? "Online" : "Connecting..."}
+          </span>
         </div>
 
         <button className={styles.expandBtn} onClick={onExpand}>
           {isExpanded ? (
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/>
-              <line x1="10" y1="14" x2="3" y2="21"/><line x1="21" y1="3" x2="14" y2="10"/>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <polyline points="4 14 10 14 10 20" />
+              <polyline points="20 10 14 10 14 4" />
+              <line x1="10" y1="14" x2="3" y2="21" />
+              <line x1="21" y1="3" x2="14" y2="10" />
             </svg>
           ) : (
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/>
-              <line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <polyline points="15 3 21 3 21 9" />
+              <polyline points="9 21 3 21 3 15" />
+              <line x1="21" y1="3" x2="14" y2="10" />
+              <line x1="3" y1="21" x2="10" y2="14" />
             </svg>
           )}
         </button>
       </div>
 
       <div className={styles.messagesWrap}>
-        <div className={styles.messages} ref={scrollRef} onScroll={handleScroll}>
+        <div
+          className={styles.messages}
+          ref={scrollRef}
+          onScroll={handleScroll}
+        >
           {error && <div className={styles.errorBanner}>{error.message}</div>}
           {messages.length === 0 && connected && (
             <div className={styles.emptyState}>
@@ -88,9 +125,23 @@ export const ChatScreen: React.FC<Props> = ({
         </div>
 
         {showScrollBtn && (
-          <button className={styles.scrollBtn} onClick={() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' })}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="6 9 12 15 18 9"/>
+          <button
+            className={styles.scrollBtn}
+            onClick={() =>
+              bottomRef.current?.scrollIntoView({ behavior: "smooth" })
+            }
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <polyline points="6 9 12 15 18 9" />
             </svg>
           </button>
         )}
@@ -103,13 +154,13 @@ export const ChatScreen: React.FC<Props> = ({
         isThinking={isThinking}
       />
     </div>
-  )
-}
+  );
+};
 
 const pulse = keyframes`
   0%, 100% { opacity: 1; }
   50% { opacity: 0.4; }
-`
+`;
 
 const styles = {
   wrapper: css`
@@ -142,8 +193,8 @@ const styles = {
     height: 7px;
     border-radius: 50%;
     flex-shrink: 0;
-    background: ${connected ? '#22c55e' : '#f59e0b'};
-    animation: ${connected ? 'none' : `${pulse} 1.2s ease-in-out infinite`};
+    background: ${connected ? "#22c55e" : "#f59e0b"};
+    animation: ${connected ? "none" : `${pulse} 1.2s ease-in-out infinite`};
   `,
   statusLabel: css`
     font-size: 11px;
@@ -160,7 +211,9 @@ const styles = {
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    transition: color 0.15s, background 0.15s;
+    transition:
+      color 0.15s,
+      background 0.15s;
     &:hover {
       color: var(--wds-fg);
       background: var(--wds-muted-bg);
@@ -177,7 +230,9 @@ const styles = {
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    transition: color 0.15s, background 0.15s;
+    transition:
+      color 0.15s,
+      background 0.15s;
     &:hover {
       color: var(--wds-fg);
       background: var(--wds-muted-bg);
@@ -234,11 +289,13 @@ const styles = {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-    transition: color 0.15s, border-color 0.15s;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    transition:
+      color 0.15s,
+      border-color 0.15s;
     &:hover {
       color: var(--wds-primary);
       border-color: var(--wds-primary);
     }
   `,
-}
+};

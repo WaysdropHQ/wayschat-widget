@@ -21,7 +21,7 @@ export const MessageBubble: React.FC<Props> = ({ message }) => {
         {isBot && <span className={styles.botLabel}>Ways AI</span>}
         <div className={styles.bubble(isCustomer)}>
           {message.file && (
-            <a href={message.file} target="_blank" rel="noreferrer" className={styles.fileLink}>
+            <a href={message.file} target="_blank" rel="noreferrer" className={styles.fileLink(!!message.content)}>
               📎 View attachment
             </a>
           )}
@@ -74,12 +74,13 @@ const styles = {
     white-space: pre-wrap;
     text-align: left;
   `,
-  fileLink: css`
+  fileLink: (hasContent: boolean) => css`
     font-size: 0.875rem;
     color: inherit;
     text-decoration: underline;
     display: block;
     text-align: left;
+    ${hasContent ? 'margin-bottom: 6px;' : ''}
   `,
   time: css`
     font-size: 10px;

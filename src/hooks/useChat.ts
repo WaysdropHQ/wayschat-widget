@@ -31,7 +31,6 @@ export const useChat = (config: ChatConfig) => {
     reset,
   } = useChatStore()
 
-  // ─── Connect ────────────────────────────────────────────────────────────────
 
   useEffect(() => {
     const socket = getSocket(config)
@@ -70,7 +69,6 @@ export const useChat = (config: ChatConfig) => {
     }
   }, [])
 
-  // ─── Send text message ───────────────────────────────────────────────────────
 
   const sendMessage = useCallback(
     (content: string, info?: VisitorInfo) => {
@@ -93,16 +91,16 @@ export const useChat = (config: ChatConfig) => {
     [config, visitorInfo]
   )
 
-  // ─── Send file ───────────────────────────────────────────────────────────────
 
   const sendFile = useCallback(
-    async (file: File, info?: VisitorInfo) => {
+    async (file: File, content?: string, info?: VisitorInfo) => {
       const url = await uploadFile(file, config)
 
       const socket = getSocket(config)
 
       const dto: SupportSendMessageDTO = {
         file: url,
+        ...(content ? { content } : {}),
         externalId: `file-${Date.now()}`,
         ...(info ?? visitorInfo
           ? {
