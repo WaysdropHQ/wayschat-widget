@@ -1,66 +1,64 @@
-import React, { useEffect, useState } from 'react'
-import { injectGlobal } from '@emotion/css'
-import { ChatConfig } from '../types'
-import { loadVisitorId } from '../lib/upload'
-import { useChat } from '../hooks/useChat'
-import { useChatStore } from '../store/chatStore'
-import { FloatingButton } from './FloatingButton'
-import { ChatPanel } from './ChatPanel'
-import { HomeScreen } from './HomeScreen'
-import { ChatScreen } from './ChatScreen'
+import React, { useEffect, useState } from "react";
+import { injectGlobal } from "@emotion/css";
+import { ChatConfig } from "../types";
+import { loadVisitorId } from "../lib/upload";
+import { useChat } from "../hooks/useChat";
+import { useChatStore } from "../store/chatStore";
+import { FloatingButton } from "./FloatingButton";
+import { ChatPanel } from "./ChatPanel";
+import { HomeScreen } from "./HomeScreen";
+import { ChatScreen } from "./ChatScreen";
 
 export type ChatWidgetProps = {
-  config: ChatConfig
-}
+  config: ChatConfig;
+};
 
-type View = 'home' | 'chat'
+type View = "home" | "chat";
 
 export const ChatWidget: React.FC<ChatWidgetProps> = ({ config }) => {
-  const [isOpen, setIsOpen] = useState(false)
-  const [isExpanded, setIsExpanded] = useState(false)
-  const [view, setView] = useState<View>('home')
+  const [isOpen, setIsOpen] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [view, setView] = useState<View>("home");
+  const [visitorId] = useState<string | undefined>(
+    () => config.visitorId ?? loadVisitorId() ?? undefined,
+  );
 
-  const reset = useChatStore((s) => s.reset)
+  const reset = useChatStore((s) => s.reset);
 
   const resolvedConfig: ChatConfig = {
     ...config,
-    visitorId: config.visitorId ?? loadVisitorId() ?? undefined,
-  }
+    visitorId,
+  };
 
-  const hasHistory = !!resolvedConfig.visitorId
+  const hasHistory = !!visitorId;
 
-  const { status, messages, error, sendMessage, sendFile } = useChat(resolvedConfig)
+  const { status, messages, error, sendMessage, sendFile } =
+    useChat(resolvedConfig);
 
   const handleNewConversation = () => {
-    reset()
-    setView('chat')
-  }
+    reset();
+    setView("chat");
+  };
 
   useEffect(() => {
-    const isMobile = window.innerWidth <= 480
+    const isMobile = window.innerWidth <= 480;
     if (isMobile) {
-      document.body.style.overflow = isOpen ? 'hidden' : ''
+      document.body.style.overflow = isOpen ? "hidden" : "";
     }
     return () => {
-      document.body.style.overflow = ''
-    }
-  }, [isOpen])
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
 
   return (
     <>
-      <FloatingButton
-        isOpen={isOpen}
-        onToggle={() => setIsOpen((p) => !p)}
-      />
+      <FloatingButton isOpen={isOpen} onToggle={() => setIsOpen((p) => !p)} />
 
-      <ChatPanel
-        isOpen={isOpen}
-        isExpanded={isExpanded}
-      >
-        {view === 'home' ? (
+      <ChatPanel isOpen={isOpen} isExpanded={isExpanded}>
+        {view === "home" ? (
           <HomeScreen
             onStartChat={handleNewConversation}
-            onContinueChat={() => setView('chat')}
+            onContinueChat={() => setView("chat")}
             hasHistory={hasHistory}
             onExpand={() => setIsExpanded((p) => !p)}
             isExpanded={isExpanded}
@@ -70,7 +68,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config }) => {
             messages={messages}
             onSendText={sendMessage}
             onSendFile={sendFile}
-            onBack={() => setView('home')}
+            onBack={() => setView("home")}
             onExpand={() => setIsExpanded((p) => !p)}
             isExpanded={isExpanded}
             status={status}
@@ -79,8 +77,8 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config }) => {
         )}
       </ChatPanel>
     </>
-  )
-}
+  );
+};
 
 injectGlobal`
   :root {
@@ -109,4 +107,4 @@ injectGlobal`
     box-sizing: border-box;
     text-align: left;
   }
-`
+`;

@@ -3,14 +3,17 @@ import type { ChatConfig } from "../types";
 const VISITOR_ID_KEY = "waysdrop_visitor_id";
 
 export const saveVisitorId = (id: string): void => {
+  if (typeof window === 'undefined') return;
   localStorage.setItem(VISITOR_ID_KEY, id);
 };
 
 export const loadVisitorId = (): string | null => {
+  if (typeof window === 'undefined') return null;
   return localStorage.getItem(VISITOR_ID_KEY);
 };
 
 export const clearVisitorId = (): void => {
+  if (typeof window === 'undefined') return;
   localStorage.removeItem(VISITOR_ID_KEY);
 };
 

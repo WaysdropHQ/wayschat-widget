@@ -1,5 +1,5 @@
 import { useEffect, useCallback } from 'react'
-import { getSocket, destroySocket } from '../lib/socket'
+import { createSocket, getSocket, destroySocket } from '../lib/socket'
 import { saveVisitorId, uploadFile } from '../lib/upload'
 import { useChatStore } from '../store/chatStore'
 import type {
@@ -31,9 +31,8 @@ export const useChat = (config: ChatConfig) => {
     reset,
   } = useChatStore()
 
-
   useEffect(() => {
-    const socket = getSocket(config)
+    const socket = createSocket(config)
 
     setStatus('connecting')
     socket.connect()
@@ -67,8 +66,7 @@ export const useChat = (config: ChatConfig) => {
       destroySocket()
       reset()
     }
-  }, [])
-
+  }, [config.token])
 
   const sendMessage = useCallback(
     (content: string, info?: VisitorInfo) => {
@@ -90,7 +88,6 @@ export const useChat = (config: ChatConfig) => {
     },
     [config, visitorInfo]
   )
-
 
   const sendFile = useCallback(
     async (file: File, content?: string, info?: VisitorInfo) => {

@@ -3,8 +3,11 @@ import type { ChatConfig } from '../types'
 
 let socket: Socket | null = null
 
-export const getSocket = (config: ChatConfig): Socket => {
-  if (socket) return socket
+export const createSocket = (config: ChatConfig): Socket => {
+  if (socket) {
+    socket.disconnect()
+    socket = null
+  }
 
   const { serverUrl, token, visitorId } = config
 
@@ -18,6 +21,11 @@ export const getSocket = (config: ChatConfig): Socket => {
   })
 
   return socket
+}
+
+export const getSocket = (config: ChatConfig): Socket => {
+  if (socket) return socket
+  return createSocket(config)
 }
 
 export const destroySocket = (): void => {
