@@ -289,6 +289,5 @@ const styles = {
     margin: 0;
     text-align: center;
     opacity: 0.7;
-    text-align: center;
   `,
 }
