@@ -43,10 +43,12 @@ Mount `<ChatWidget />` once at the root of your app. It renders a floating butto
 
 ```ts
 type ChatConfig = {
-  serverUrl: string   // Socket.IO server URL
-  apiUrl: string      // REST base URL (used for file uploads)
-  token?: string      // JWT for authenticated users — omit for visitor flow
-  visitorId?: string  // Pass a returning visitor's ID to restore chat history
+  serverUrl: string       // Socket.IO server URL
+  apiUrl: string          // REST base URL (used for file uploads)
+  token?: string          // JWT for authenticated users — omit for visitor flow
+  visitorId?: string      // Pass a returning visitor's ID to restore chat history
+  theme?: 'light' | 'dark' | 'system'  // defaults to 'system'
+  primaryColor?: string   // any valid CSS color — defaults to Waysdrop blue
 }
 ```
 
@@ -60,7 +62,20 @@ saveVisitorId(id)      // writes to localStorage
 clearVisitorId()       // clears — use on logout
 ```
 
-**Authenticated flow** — pass a `token` (JWT). The socket server resolves the user from it. No `visitorId` needed.
+**Authenticated flow** — pass a `token` (JWT). The socket server resolves the user from it. No `visitorId` needed. If the token changes at runtime (user logs in after mount), the widget automatically destroys the old socket connection and reconnects with the new token.
+
+**Theming** — `theme` controls the color scheme. `system` follows the OS `prefers-color-scheme`. `light` and `dark` force it regardless of the OS setting. `primaryColor` accepts any valid CSS color value:
+
+```tsx
+<ChatWidget
+  config={{
+    serverUrl: '...',
+    apiUrl: '...',
+    theme: 'dark',
+    primaryColor: '#7c3aed',
+  }}
+/>
+```
 
 ---
 
@@ -81,11 +96,11 @@ const {
   visitorInfo,  // VisitorInfo | null
   setVisitorInfo,
   sendMessage,  // (content: string, info?: VisitorInfo) => void
-  sendFile,     // (file: File, info?: VisitorInfo) => Promise<void>
+  sendFile,     // (file: File, content?: string, info?: VisitorInfo) => Promise<void>
 } = useChat(config)
 ```
 
-`sendMessage` and `sendFile` accept an optional `VisitorInfo` argument for the first message in a visitor session (name, email, phone). After the first message, `visitorInfo` is stored in the Zustand store and reused automatically.
+`sendMessage` and `sendFile` accept an optional `VisitorInfo` argument for the first message in a visitor session. `sendFile` also accepts an optional `content` string to send text alongside the file in a single message.
 
 ---
 
@@ -104,7 +119,7 @@ type ChatMessage = {
 }
 
 type VisitorInfo = {
-  email: string   // required
+  email: string
   name?: string
   phone?: string
 }

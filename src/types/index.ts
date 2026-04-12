@@ -64,9 +64,11 @@ export type VisitorInfo = {
 
 export type ChatConfig = {
   serverUrl: string
-  apiUrl: string       // base REST url for file upload etc
-  token?: string       // authenticated user JWT
-  visitorId?: string   // returning visitor id from localStorage
+  apiUrl: string
+  token?: string
+  visitorId?: string
+  theme?: 'light' | 'dark' | 'system'
+  primaryColor?: string
 }
 
 // ─── Store State ──────────────────────────────────────────────────────────────
