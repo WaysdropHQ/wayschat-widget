@@ -1,3 +1,4 @@
+"use client"
 import React, { useEffect, useState } from 'react'
 import { injectGlobal } from '@emotion/css'
 import { ChatConfig } from '../types'
@@ -84,7 +85,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config }) => {
     () => config.visitorId ?? loadVisitorId() ?? undefined
   )
 
-  const reset = useChatStore((s) => s.reset)
+  const resetChat = useChatStore((s) => s.resetChat)
 
   const resolvedConfig: ChatConfig = {
     ...config,
@@ -93,10 +94,31 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config }) => {
 
   const hasHistory = !!visitorId
 
-  const { status, messages, error, sendMessage, sendFile } = useChat(resolvedConfig)
+  const {
+    status,
+    chatStatus,
+    messages,
+    error,
+    sendMessage,
+    sendFile,
+  } = useChat(resolvedConfig)
+
+  const isClosed =
+    chatStatus === 'RESOLVED' || chatStatus === 'CLOSED'
+
+  // When the chat gets closed while the user is on the chat screen, keep them
+  // there so they can see the "closed" state — don't auto-redirect.
+  // They can go back manually or start a new conversation.
 
   const handleNewConversation = () => {
-    reset()
+    // resetChat keeps visitorId but clears messages/chatId/chatStatus
+    // so the next message the user sends goes to a fresh chat thread
+    resetChat()
+    setView('chat')
+  }
+
+  const handleContinueChat = () => {
+    // Going back to an existing thread — don't reset anything
     setView('chat')
   }
 
@@ -137,10 +159,13 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config }) => {
         {view === 'home' ? (
           <HomeScreen
             onStartChat={handleNewConversation}
-            onContinueChat={() => setView('chat')}
+            onContinueChat={handleContinueChat}
             hasHistory={hasHistory}
             onExpand={() => setIsExpanded((p) => !p)}
             isExpanded={isExpanded}
+            logo={config.logo}
+            title={config.title}
+            subtitle={config.subtitle}
           />
         ) : (
           <ChatScreen
@@ -152,6 +177,8 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config }) => {
             isExpanded={isExpanded}
             status={status}
             error={error}
+            isClosed={isClosed}
+            acceptedFileTypes={config.acceptedFileTypes}
           />
         )}
       </ChatPanel>

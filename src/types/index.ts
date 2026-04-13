@@ -24,6 +24,17 @@ export type ChatMessage = {
   createdAt: string
 }
 
+// ─── Chat Status ──────────────────────────────────────────────────────────────
+
+export type ChatStatus = 'OPEN' | 'RESOLVED' | 'CLOSED' | 'PENDING'
+
+export type SupportChatUpdatedAction =
+  | 'ASSIGNED'
+  | 'OPENED'
+  | 'RESOLVED'
+  | 'AI_ASSIGNED'
+  | 'AI_RESOLVED'
+
 // ─── Socket Payloads (Server → Client) ────────────────────────────────────────
 
 export type SupportMessageSentPayload = {
@@ -34,6 +45,16 @@ export type SupportMessageSentPayload = {
 export type SupportNewMessagePayload = {
   chatId: string
   message: ChatMessage
+}
+
+export type SupportChatUpdatedPayload = {
+  action: SupportChatUpdatedAction
+  chat: {
+    id: string
+    status: string
+    channel: string
+    assigneeId?: string | null
+  }
 }
 
 export type SocketError = {
@@ -69,6 +90,14 @@ export type ChatConfig = {
   visitorId?: string
   theme?: 'light' | 'dark' | 'system'
   primaryColor?: string
+  /** Custom logo URL. If omitted, the default Waysdrop logo is used. */
+  logo?: string
+  /** Replace the hero title on the home screen. Defaults to "Hi there! 👋" */
+  title?: string
+  /** Replace the hero subtitle on the home screen. */
+  subtitle?: string
+  /** Accepted file MIME types for attachment. Defaults to all: image/*, video/*, audio/*, application/pdf etc. */
+  acceptedFileTypes?: string
 }
 
 // ─── Store State ──────────────────────────────────────────────────────────────
@@ -80,7 +109,9 @@ export type ChatState = {
   role: UserRole | null
   visitorId: string | null
   chatId: string | null
+  /** Status of the active chat as reported by support-chat-updated events */
+  chatStatus: ChatStatus | null
   messages: ChatMessage[]
   error: SocketError | null
-  visitorInfo: VisitorInfo | null   // set before first message on visitor flow
+  visitorInfo: VisitorInfo | null
 }

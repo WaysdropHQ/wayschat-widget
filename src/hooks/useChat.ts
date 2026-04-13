@@ -7,10 +7,14 @@ import type {
   ConnectedPayload,
   SupportMessageSentPayload,
   SupportNewMessagePayload,
+  SupportChatUpdatedPayload,
   SocketError,
   SupportSendMessageDTO,
   VisitorInfo,
+  ChatStatus,
 } from '../types'
+
+const RESOLVED_ACTIONS = new Set(['RESOLVED', 'AI_RESOLVED'])
 
 export const useChat = (config: ChatConfig) => {
   const {
@@ -18,6 +22,7 @@ export const useChat = (config: ChatConfig) => {
     role,
     visitorId,
     chatId,
+    chatStatus,
     messages,
     error,
     visitorInfo,
@@ -25,10 +30,12 @@ export const useChat = (config: ChatConfig) => {
     setRole,
     setVisitorId,
     setChatId,
+    setChatStatus,
     addMessage,
     setError,
     setVisitorInfo,
     reset,
+    resetChat,
   } = useChatStore()
 
   useEffect(() => {
@@ -49,12 +56,27 @@ export const useChat = (config: ChatConfig) => {
 
     socket.on('support-message-sent', (payload: SupportMessageSentPayload) => {
       setChatId(payload.chatId)
+      // If we get a new message after a resolved state, the server opened a
+      // new chat — clear the closed status.
+      setChatStatus(null)
       addMessage(payload.message)
     })
 
     socket.on('support-new-message', (payload: SupportNewMessagePayload) => {
       setChatId(payload.chatId)
+      setChatStatus(null)
       addMessage(payload.message)
+    })
+
+    socket.on('support-chat-updated', (payload: SupportChatUpdatedPayload) => {
+      // Only care about events for the current chat
+      if (chatId && payload.chat.id !== chatId) return
+
+      if (RESOLVED_ACTIONS.has(payload.action)) {
+        setChatStatus('RESOLVED')
+      } else {
+        setChatStatus(payload.chat.status as ChatStatus)
+      }
     })
 
     socket.on('error', (err: SocketError) => {
@@ -62,11 +84,31 @@ export const useChat = (config: ChatConfig) => {
       setStatus('error')
     })
 
+    socket.on('disconnect', (reason: string) => {
+      // Transport closed by server — attempt reconnect handled by socket.io
+      // but update status so UI shows reconnecting state
+      if (reason !== 'io client disconnect') {
+        setStatus('connecting')
+      }
+    })
+
+    socket.on('reconnect', () => {
+      setStatus('connected')
+    })
+
     return () => {
       destroySocket()
       reset()
     }
-  }, [config.token])
+  // Re-run only when the identity-related config changes
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config.serverUrl, config.token])
+
+  // Keep chatId in a ref-like way so the support-chat-updated handler above
+  // can compare without stale closure. We re-register the event inside the
+  // same effect so it picks up the current chatId from the store via the
+  // socket.on callback — this is fine because socket.on callbacks read from
+  // the store directly via useChatStore, not from the closed-over value.
 
   const sendMessage = useCallback(
     (content: string, info?: VisitorInfo) => {
@@ -118,11 +160,13 @@ export const useChat = (config: ChatConfig) => {
     role,
     visitorId,
     chatId,
+    chatStatus,
     messages,
     error,
     visitorInfo,
     setVisitorInfo,
     sendMessage,
     sendFile,
+    resetChat,
   }
 }

@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import type {
   ChatState,
   ChatMessage,
+  ChatStatus,
   UserRole,
   SocketError,
   VisitorInfo,
@@ -13,9 +14,17 @@ type ChatActions = {
   setRole: (role: UserRole) => void
   setVisitorId: (id: string) => void
   setChatId: (id: string) => void
+  setChatStatus: (status: ChatStatus | null) => void
   addMessage: (message: ChatMessage) => void
   setError: (error: SocketError | null) => void
   setVisitorInfo: (info: VisitorInfo) => void
+  /**
+   * Full reset — used when starting a brand-new conversation.
+   * Clears chatId and chatStatus but intentionally keeps visitorId
+   * so the server can associate the new chat with the same visitor.
+   */
+  resetChat: () => void
+  /** Hard reset including visitorId — use only when explicitly clearing identity. */
   reset: () => void
 }
 
@@ -24,6 +33,7 @@ const initialState: ChatState = {
   role: null,
   visitorId: null,
   chatId: null,
+  chatStatus: null,
   messages: [],
   error: null,
   visitorInfo: null,
@@ -36,11 +46,22 @@ export const useChatStore = create<ChatState & ChatActions>((set) => ({
   setRole: (role) => set({ role }),
   setVisitorId: (id) => set({ visitorId: id }),
   setChatId: (id) => set({ chatId: id }),
+  setChatStatus: (chatStatus) => set({ chatStatus }),
   addMessage: (message) =>
     set((state) => ({
       messages: [...state.messages, message],
     })),
   setError: (error) => set({ error }),
   setVisitorInfo: (info) => set({ visitorInfo: info }),
+
+  // Keep visitorId so server can create a new chat for the same visitor
+  resetChat: () =>
+    set((state) => ({
+      ...initialState,
+      visitorId: state.visitorId,
+      role: state.role,
+      status: state.status,
+    })),
+
   reset: () => set(initialState),
 }))

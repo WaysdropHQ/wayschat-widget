@@ -1,69 +1,137 @@
-import React, { useState, useRef, useCallback, KeyboardEvent } from 'react'
-import { css, keyframes } from '@emotion/css'
+import React, { useState, useRef, useCallback, KeyboardEvent } from "react";
+import { css, keyframes } from "@emotion/css";
 
 const spin = keyframes`
   to { transform: rotate(360deg); }
-`
+`;
 
 const pulse = keyframes`
   0%, 100% { opacity: 0.4; transform: scaleY(0.6); }
   50% { opacity: 1; transform: scaleY(1); }
-`
+`;
 
 interface Props {
-  onSendText: (content: string) => void
-  onSendFile: (file: File, content?: string) => Promise<void>
-  disabled?: boolean
-  isThinking?: boolean
+  onSendText: (content: string) => void;
+  onSendFile: (file: File, content?: string) => Promise<void>;
+  disabled?: boolean;
+  isThinking?: boolean;
+  isClosed?: boolean;
+  /** Accepted MIME types string e.g. "image/*,application/pdf". Defaults to common types. */
+  acceptedFileTypes?: string;
 }
 
-export const ChatInput: React.FC<Props> = ({ onSendText, onSendFile, disabled, isThinking }) => {
-  const [value, setValue] = useState('')
-  const [uploading, setUploading] = useState(false)
-  const [pendingFile, setPendingFile] = useState<File | null>(null)
-  const [pendingPreview, setPendingPreview] = useState<string | null>(null)
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+const DEFAULT_ACCEPT =
+  "image/*,video/*,audio/*,application/pdf,.doc,.docx,.xls,.xlsx,.csv,.txt";
+
+const AUTO_GROW_MAX = 160; // px — textarea stops growing after this
+
+function autoGrow(el: HTMLTextAreaElement) {
+  el.style.height = "auto";
+  const next = Math.min(el.scrollHeight, AUTO_GROW_MAX);
+  el.style.height = `${next}px`;
+}
+
+export const ChatInput: React.FC<Props> = ({
+  onSendText,
+  onSendFile,
+  disabled,
+  isThinking,
+  isClosed,
+  acceptedFileTypes = DEFAULT_ACCEPT,
+}) => {
+  const [value, setValue] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [pendingPreview, setPendingPreview] = useState<string | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const isLocked = disabled || uploading || !!isClosed;
 
   const handleSend = useCallback(() => {
-    const trimmed = value.trim()
-    if ((!trimmed && !pendingFile) || disabled || uploading) return
+    const trimmed = value.trim();
+    if ((!trimmed && !pendingFile) || isLocked) return;
 
     if (pendingFile) {
-      setUploading(true)
+      setUploading(true);
       onSendFile(pendingFile, trimmed || undefined).finally(() => {
-        setUploading(false)
-        setPendingFile(null)
-        setPendingPreview(null)
-        setValue('')
-      })
+        setUploading(false);
+        setPendingFile(null);
+        setPendingPreview(null);
+        setValue("");
+        if (textareaRef.current) {
+          textareaRef.current.style.height = "auto";
+        }
+      });
     } else if (trimmed) {
-      onSendText(trimmed)
-      setValue('')
+      onSendText(trimmed);
+      setValue("");
+      if (textareaRef.current) {
+        textareaRef.current.style.height = "auto";
+      }
     }
 
-    textareaRef.current?.focus()
-  }, [value, pendingFile, disabled, uploading, onSendText, onSendFile])
+    textareaRef.current?.focus();
+  }, [value, pendingFile, isLocked, onSendText, onSendFile]);
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      handleSend()
+    if (e.key === "Enter" && e.shiftKey) {
+      // Shift+Enter: insert newline, let textarea grow
+      return;
     }
-  }
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setValue(e.target.value);
+    autoGrow(e.target);
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    if (!file.type.startsWith('image/')) return
-    setPendingFile(file)
-    const reader = new FileReader()
-    reader.onload = (ev) => setPendingPreview(ev.target?.result as string)
-    reader.readAsDataURL(file)
-    e.target.value = ''
-  }
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-  const canSend = (value.trim() || pendingFile) && !disabled && !uploading
+    setPendingFile(file);
+
+    // Only generate image previews; other types show file name
+    if (file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onload = (ev) => setPendingPreview(ev.target?.result as string);
+      reader.readAsDataURL(file);
+    } else {
+      setPendingPreview(null);
+    }
+
+    e.target.value = "";
+  };
+
+  const canSend = (value.trim() || pendingFile) && !isLocked;
+
+  if (isClosed) {
+    return (
+      <div className={styles.closedBar}>
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          style={{ flexShrink: 0, opacity: 0.6 }}
+        >
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <line x1="12" y1="16" x2="12.01" y2="16" />
+        </svg>
+        This conversation has been closed
+      </div>
+    );
+  }
 
   return (
     <div className={styles.wrapper}>
@@ -78,12 +146,50 @@ export const ChatInput: React.FC<Props> = ({ onSendText, onSendFile, disabled, i
         </div>
       )}
 
-      {pendingPreview && (
-        <div className={styles.imagePreview}>
-          <img src={pendingPreview} alt="attachment" className={styles.previewImg} />
-          <button className={styles.removeFile} onClick={() => { setPendingFile(null); setPendingPreview(null) }}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      {pendingFile && (
+        <div className={styles.filePreview}>
+          {pendingPreview ? (
+            <img
+              src={pendingPreview}
+              alt="attachment"
+              className={styles.previewImg}
+            />
+          ) : (
+            <div className={styles.fileChip}>
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+              </svg>
+              <span>{pendingFile.name}</span>
+            </div>
+          )}
+          <button
+            className={styles.removeFile}
+            onClick={() => {
+              setPendingFile(null);
+              setPendingPreview(null);
+            }}
+          >
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </button>
         </div>
@@ -93,18 +199,27 @@ export const ChatInput: React.FC<Props> = ({ onSendText, onSendFile, disabled, i
         <button
           className={styles.attachBtn}
           onClick={() => fileInputRef.current?.click()}
-          disabled={disabled || uploading}
+          disabled={isLocked}
           type="button"
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
           </svg>
         </button>
 
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*"
+          accept={acceptedFileTypes}
           className={styles.hiddenInput}
           onChange={handleFileChange}
         />
@@ -113,19 +228,34 @@ export const ChatInput: React.FC<Props> = ({ onSendText, onSendFile, disabled, i
           ref={textareaRef}
           className={styles.textarea}
           value={value}
-          onChange={(e) => setValue(e.target.value)}
+          onChange={handleChange}
           onKeyDown={handleKeyDown}
           placeholder="Type a message..."
-          disabled={disabled || uploading}
+          disabled={isLocked}
           rows={1}
         />
 
-        <button className={styles.sendBtn} onClick={handleSend} disabled={!canSend} type="button">
+        <button
+          className={styles.sendBtn}
+          onClick={handleSend}
+          disabled={!canSend}
+          type="button"
+        >
           {uploading ? (
             <span className={styles.spinner} />
           ) : (
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="12" y1="19" x2="12" y2="5" />
+              <polyline points="5 12 12 5 19 12" />
             </svg>
           )}
         </button>
@@ -133,8 +263,8 @@ export const ChatInput: React.FC<Props> = ({ onSendText, onSendFile, disabled, i
 
       <p className={styles.hint}>Enter to send · Shift+Enter for new line</p>
     </div>
-  )
-}
+  );
+};
 
 const styles = {
   wrapper: css`
@@ -145,6 +275,19 @@ const styles = {
     gap: 6px;
     background: var(--wds-bg);
     flex-shrink: 0;
+  `,
+  closedBar: css`
+    padding: 14px 16px;
+    border-top: 1px solid var(--wds-border);
+    background: var(--wds-muted-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--wds-muted);
+    flex-shrink: 0;
+    text-align: center;
   `,
   thinkingBar: css`
     display: flex;
@@ -170,7 +313,7 @@ const styles = {
     font-size: 11px;
     color: var(--wds-muted);
   `,
-  imagePreview: css`
+  filePreview: css`
     position: relative;
     width: fit-content;
     margin: 0 2px;
@@ -182,6 +325,23 @@ const styles = {
     border-radius: 10px;
     border: 1px solid var(--wds-border);
     display: block;
+  `,
+  fileChip: css`
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--wds-muted-bg);
+    border: 1px solid var(--wds-border);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 12px;
+    color: var(--wds-fg);
+    max-width: 200px;
+    span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
   `,
   removeFile: css`
     position: absolute;
@@ -201,7 +361,7 @@ const styles = {
   `,
   inputRow: css`
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     gap: 6px;
     background: var(--wds-muted-bg);
     border: 1px solid var(--wds-border);
@@ -224,6 +384,7 @@ const styles = {
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    margin-bottom: 3px;
     transition: color 0.15s;
     &:hover:not(:disabled) {
       color: var(--wds-primary);
@@ -247,9 +408,12 @@ const styles = {
     background: transparent;
     color: var(--wds-fg);
     outline: none;
-    max-height: 120px;
     overflow-y: auto;
-    &::placeholder { color: var(--wds-muted); }
+    min-height: 32px;
+    max-height: ${AUTO_GROW_MAX}px;
+    &::placeholder {
+      color: var(--wds-muted);
+    }
     &:disabled {
       opacity: 0.5;
       cursor: not-allowed;
@@ -268,16 +432,19 @@ const styles = {
     color: #fff;
     flex-shrink: 0;
     transition: opacity 0.15s;
+    margin-bottom: 1px;
     &:disabled {
       opacity: 0.35;
       cursor: not-allowed;
     }
-    &:hover:not(:disabled) { opacity: 0.85; }
+    &:hover:not(:disabled) {
+      opacity: 0.85;
+    }
   `,
   spinner: css`
     width: 14px;
     height: 14px;
-    border: 2px solid rgba(255,255,255,0.3);
+    border: 2px solid rgba(255, 255, 255, 0.3);
     border-top-color: #fff;
     border-radius: 50%;
     animation: ${spin} 0.7s linear infinite;
@@ -290,4 +457,4 @@ const styles = {
     text-align: center;
     opacity: 0.7;
   `,
-}
+};

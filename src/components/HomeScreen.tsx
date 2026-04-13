@@ -1,12 +1,20 @@
 import React from 'react'
 import { css } from '@emotion/css'
 
+const DEFAULT_LOGO = 'https://cdn.waysdrop.com/bulk/horizon_20260411202129966_d25edae2.png'
+const DEFAULT_TITLE = 'Hi there! 👋'
+const DEFAULT_SUBTITLE = "We're here to help. Ask us anything or share your feedback."
+
 interface Props {
   onStartChat: () => void
   onContinueChat: () => void
   hasHistory: boolean
   onExpand: () => void
   isExpanded: boolean
+  /** Custom logo URL. Pass null to hide the logo entirely. */
+  logo?: string | null
+  title?: string
+  subtitle?: string
 }
 
 export const HomeScreen: React.FC<Props> = ({
@@ -15,17 +23,22 @@ export const HomeScreen: React.FC<Props> = ({
   hasHistory,
   onExpand,
   isExpanded,
+  logo = DEFAULT_LOGO,
+  title = DEFAULT_TITLE,
+  subtitle = DEFAULT_SUBTITLE,
 }) => {
   return (
     <div className={styles.wrapper}>
       <div className={styles.topBar}>
-        <div className={styles.logoMark}>
-          <img
-            src="https://cdn.waysdrop.com/bulk/horizon_20260411202129966_d25edae2.png"
-            alt="Waysdrop"
-            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-          />
-        </div>
+        {logo !== null && (
+          <div className={styles.logoMark}>
+            <img
+              src={logo}
+              alt="Logo"
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+            />
+          </div>
+        )}
         <button className={styles.expandBtn} onClick={onExpand}>
           {isExpanded ? (
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -42,8 +55,8 @@ export const HomeScreen: React.FC<Props> = ({
       </div>
 
       <div className={styles.hero}>
-        <h2 className={styles.heroTitle}>Hi there! 👋</h2>
-        <p className={styles.heroSub}>We're here to help. Ask us anything or share your feedback.</p>
+        {title && <h2 className={styles.heroTitle}>{title}</h2>}
+        {subtitle && <p className={styles.heroSub}>{subtitle}</p>}
       </div>
 
       <div className={styles.section}>
@@ -116,6 +129,7 @@ const styles = {
     display: flex;
     align-items: center;
     justify-content: center;
+    margin-left: auto;
     transition: color 0.15s, background 0.15s;
     &:hover {
       color: var(--wds-fg);
