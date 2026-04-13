@@ -18,13 +18,8 @@ type ChatActions = {
   addMessage: (message: ChatMessage) => void
   setError: (error: SocketError | null) => void
   setVisitorInfo: (info: VisitorInfo) => void
-  /**
-   * Full reset — used when starting a brand-new conversation.
-   * Clears chatId and chatStatus but intentionally keeps visitorId
-   * so the server can associate the new chat with the same visitor.
-   */
+  setIsThinking: (val: boolean) => void
   resetChat: () => void
-  /** Hard reset including visitorId — use only when explicitly clearing identity. */
   reset: () => void
 }
 
@@ -37,6 +32,7 @@ const initialState: ChatState = {
   messages: [],
   error: null,
   visitorInfo: null,
+  isThinking: false,
 }
 
 export const useChatStore = create<ChatState & ChatActions>((set) => ({
@@ -53,8 +49,8 @@ export const useChatStore = create<ChatState & ChatActions>((set) => ({
     })),
   setError: (error) => set({ error }),
   setVisitorInfo: (info) => set({ visitorInfo: info }),
+  setIsThinking: (val) => set({ isThinking: val }),
 
-  // Keep visitorId so server can create a new chat for the same visitor
   resetChat: () =>
     set((state) => ({
       ...initialState,

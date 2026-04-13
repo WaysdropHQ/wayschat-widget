@@ -114,4 +114,5 @@ export type ChatState = {
   messages: ChatMessage[]
   error: SocketError | null
   visitorInfo: VisitorInfo | null
+  isThinking: boolean
 }

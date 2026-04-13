@@ -1,20 +1,21 @@
-import React, { useEffect, useRef, useState } from 'react'
-import { css, keyframes } from '@emotion/css'
-import { ChatMessage } from '../types'
-import { MessageBubble } from './MessageBubble'
-import { ChatInput } from './ChatInput'
+import React, { useEffect, useRef, useState } from "react";
+import { css, keyframes } from "@emotion/css";
+import { ChatMessage } from "../types";
+import { MessageBubble } from "./MessageBubble";
+import { ChatInput } from "./ChatInput";
 
 interface Props {
-  messages: ChatMessage[]
-  onSendText: (content: string) => void
-  onSendFile: (file: File, content?: string) => Promise<void>
-  onBack: () => void
-  onExpand: () => void
-  isExpanded: boolean
-  status: string
-  error: { code: number; message: string } | null
-  isClosed?: boolean
-  acceptedFileTypes?: string
+  messages: ChatMessage[];
+  onSendText: (content: string) => void;
+  onSendFile: (file: File, content?: string) => Promise<void>;
+  onBack: () => void;
+  onExpand: () => void;
+  isExpanded: boolean;
+  status: string;
+  error: { code: number; message: string } | null;
+  isClosed?: boolean;
+  isThinking: boolean;
+  acceptedFileTypes?: string;
 }
 
 export const ChatScreen: React.FC<Props> = ({
@@ -27,26 +28,25 @@ export const ChatScreen: React.FC<Props> = ({
   status,
   error,
   isClosed,
+  isThinking,
   acceptedFileTypes,
 }) => {
-  const bottomRef = useRef<HTMLDivElement>(null)
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const connected = status === 'connected'
-  const [showScrollBtn, setShowScrollBtn] = useState(false)
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const connected = status === "connected";
+  const [showScrollBtn, setShowScrollBtn] = useState(false);
 
-  const lastMsg = messages[messages.length - 1]
-  const isThinking =
-    connected && !isClosed && lastMsg?.direction === 'OUTBOUND'
+  const lastMsg = messages[messages.length - 1];
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const handleScroll = () => {
-    const el = scrollRef.current
-    if (!el) return
-    setShowScrollBtn(el.scrollHeight - el.scrollTop - el.clientHeight > 80)
-  }
+    const el = scrollRef.current;
+    if (!el) return;
+    setShowScrollBtn(el.scrollHeight - el.scrollTop - el.clientHeight > 80);
+  };
 
   return (
     <div className={styles.wrapper}>
@@ -74,7 +74,7 @@ export const ChatScreen: React.FC<Props> = ({
             <>
               <span className={styles.statusDot(connected)} />
               <span className={styles.statusLabel}>
-                {connected ? 'Online' : 'Connecting...'}
+                {connected ? "Online" : "Connecting..."}
               </span>
             </>
           )}
@@ -139,7 +139,7 @@ export const ChatScreen: React.FC<Props> = ({
           <button
             className={styles.scrollBtn}
             onClick={() =>
-              bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+              bottomRef.current?.scrollIntoView({ behavior: "smooth" })
             }
           >
             <svg
@@ -167,13 +167,13 @@ export const ChatScreen: React.FC<Props> = ({
         acceptedFileTypes={acceptedFileTypes}
       />
     </div>
-  )
-}
+  );
+};
 
 const pulse = keyframes`
   0%, 100% { opacity: 1; }
   50% { opacity: 0.4; }
-`
+`;
 
 const styles = {
   wrapper: css`
@@ -206,8 +206,8 @@ const styles = {
     height: 7px;
     border-radius: 50%;
     flex-shrink: 0;
-    background: ${connected ? '#22c55e' : '#f59e0b'};
-    animation: ${connected ? 'none' : `${pulse} 1.2s ease-in-out infinite`};
+    background: ${connected ? "#22c55e" : "#f59e0b"};
+    animation: ${connected ? "none" : `${pulse} 1.2s ease-in-out infinite`};
   `,
   statusLabel: css`
     font-size: 11px;
@@ -234,7 +234,9 @@ const styles = {
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    transition: color 0.15s, background 0.15s;
+    transition:
+      color 0.15s,
+      background 0.15s;
     &:hover {
       color: var(--wds-fg);
       background: var(--wds-muted-bg);
@@ -251,7 +253,9 @@ const styles = {
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    transition: color 0.15s, background 0.15s;
+    transition:
+      color 0.15s,
+      background 0.15s;
     &:hover {
       color: var(--wds-fg);
       background: var(--wds-muted-bg);
@@ -309,10 +313,12 @@ const styles = {
     justify-content: center;
     cursor: pointer;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-    transition: color 0.15s, border-color 0.15s;
+    transition:
+      color 0.15s,
+      border-color 0.15s;
     &:hover {
       color: var(--wds-primary);
       border-color: var(--wds-primary);
     }
   `,
-}
+};

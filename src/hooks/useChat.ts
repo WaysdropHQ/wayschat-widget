@@ -26,6 +26,7 @@ export const useChat = (config: ChatConfig) => {
     messages,
     error,
     visitorInfo,
+    isThinking,
     setStatus,
     setRole,
     setVisitorId,
@@ -34,6 +35,7 @@ export const useChat = (config: ChatConfig) => {
     addMessage,
     setError,
     setVisitorInfo,
+    setIsThinking,
     reset,
     resetChat,
   } = useChatStore()
@@ -56,20 +58,19 @@ export const useChat = (config: ChatConfig) => {
 
     socket.on('support-message-sent', (payload: SupportMessageSentPayload) => {
       setChatId(payload.chatId)
-      // If we get a new message after a resolved state, the server opened a
-      // new chat — clear the closed status.
       setChatStatus(null)
+      setIsThinking(true)
       addMessage(payload.message)
     })
 
     socket.on('support-new-message', (payload: SupportNewMessagePayload) => {
       setChatId(payload.chatId)
       setChatStatus(null)
+      setIsThinking(false)
       addMessage(payload.message)
     })
 
     socket.on('support-chat-updated', (payload: SupportChatUpdatedPayload) => {
-      // Only care about events for the current chat
       if (chatId && payload.chat.id !== chatId) return
 
       if (RESOLVED_ACTIONS.has(payload.action)) {
@@ -85,8 +86,6 @@ export const useChat = (config: ChatConfig) => {
     })
 
     socket.on('disconnect', (reason: string) => {
-      // Transport closed by server — attempt reconnect handled by socket.io
-      // but update status so UI shows reconnecting state
       if (reason !== 'io client disconnect') {
         setStatus('connecting')
       }
@@ -100,15 +99,8 @@ export const useChat = (config: ChatConfig) => {
       destroySocket()
       reset()
     }
-  // Re-run only when the identity-related config changes
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config.serverUrl, config.token])
-
-  // Keep chatId in a ref-like way so the support-chat-updated handler above
-  // can compare without stale closure. We re-register the event inside the
-  // same effect so it picks up the current chatId from the store via the
-  // socket.on callback — this is fine because socket.on callbacks read from
-  // the store directly via useChatStore, not from the closed-over value.
 
   const sendMessage = useCallback(
     (content: string, info?: VisitorInfo) => {
@@ -164,6 +156,7 @@ export const useChat = (config: ChatConfig) => {
     messages,
     error,
     visitorInfo,
+    isThinking,
     setVisitorInfo,
     sendMessage,
     sendFile,
