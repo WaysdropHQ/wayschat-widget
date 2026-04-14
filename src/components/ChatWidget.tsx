@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { injectGlobal } from "@emotion/css";
 import { ChatConfig } from "../types";
-import { loadVisitorId } from "../lib/upload";
+import { loadVisitorId, createNewVisitorId } from "../lib/upload";
 import { useChat } from "../hooks/useChat";
 import { useChatStore } from "../store/chatStore";
 import { FloatingButton } from "./FloatingButton";
@@ -84,7 +84,8 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [view, setView] = useState<View>("home");
-  const [visitorId] = useState<string | undefined>(
+
+  const [visitorId, setVisitorId] = useState<string | undefined>(
     () => config.visitorId ?? loadVisitorId() ?? undefined,
   );
 
@@ -109,19 +110,14 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config }) => {
 
   const isClosed = chatStatus === "RESOLVED" || chatStatus === "CLOSED";
 
-  // When the chat gets closed while the user is on the chat screen, keep them
-  // there so they can see the "closed" state — don't auto-redirect.
-  // They can go back manually or start a new conversation.
-
   const handleNewConversation = () => {
-    // resetChat keeps visitorId but clears messages/chatId/chatStatus
-    // so the next message the user sends goes to a fresh chat thread
+    const newId = createNewVisitorId();
+    setVisitorId(newId);
     resetChat();
     setView("chat");
   };
 
   const handleContinueChat = () => {
-    // Going back to an existing thread — don't reset anything
     setView("chat");
   };
 

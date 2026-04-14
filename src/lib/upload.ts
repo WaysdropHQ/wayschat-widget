@@ -1,19 +1,34 @@
+import { v4 as uuidv4 } from "uuid";
 import type { ChatConfig } from "../types";
 
 const VISITOR_ID_KEY = "waysdrop_visitor_id";
 
 export const saveVisitorId = (id: string): void => {
-  if (typeof window === 'undefined') return;
+  if (typeof window === "undefined") return;
   localStorage.setItem(VISITOR_ID_KEY, id);
 };
 
 export const loadVisitorId = (): string | null => {
-  if (typeof window === 'undefined') return null;
+  if (typeof window === "undefined") return null;
   return localStorage.getItem(VISITOR_ID_KEY);
 };
 
+export const getOrCreateVisitorId = (): string => {
+  const existing = loadVisitorId();
+  if (existing) return existing;
+  const id = uuidv4();
+  saveVisitorId(id);
+  return id;
+};
+
+export const createNewVisitorId = (): string => {
+  const id = uuidv4();
+  saveVisitorId(id);
+  return id;
+};
+
 export const clearVisitorId = (): void => {
-  if (typeof window === 'undefined') return;
+  if (typeof window === "undefined") return;
   localStorage.removeItem(VISITOR_ID_KEY);
 };
 

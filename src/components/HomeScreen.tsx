@@ -161,6 +161,7 @@ const styles = {
     margin: 0;
     line-height: 1.6;
     text-align: left;
+    white-space: pre-line;
   `,
   section: css`
     flex: 1;

@@ -18,7 +18,7 @@ export const ChatPanel: React.FC<Props> = ({ isOpen, isExpanded, children }) => 
 const styles = {
   panel: (isOpen: boolean, isExpanded: boolean) => css`
     position: fixed;
-    bottom: 86px;
+    
     z-index: 999998;
     transition: opacity 0.2s, transform 0.25s cubic-bezier(0.34, 1.2, 0.64, 1);
     opacity: ${isOpen ? 1 : 0};
@@ -31,8 +31,9 @@ const styles = {
       border-radius: 20px;
       box-shadow: 0 20px 60px rgba(0,0,0,0.2), 0 4px 16px rgba(0,0,0,0.1);
       left: 50%;
+      bottom: 60px;
       right: auto;
-      translate: -50% 0;
+      translate: -50% 0%;
       transform: ${isOpen ? 'scale(1)' : 'scale(0.95)'};
       transform-origin: bottom center;
     `
@@ -41,7 +42,8 @@ const styles = {
       height: 620px;
       border-radius: 20px;
       box-shadow: 0 12px 48px rgba(0,0,0,0.16), 0 2px 8px rgba(0,0,0,0.08);
-      right: 22px;
+      right: 24px;
+      bottom: 110px;
       transform: ${isOpen ? 'translateY(0) scale(1)' : 'translateY(16px) scale(0.97)'};
     `}
 
