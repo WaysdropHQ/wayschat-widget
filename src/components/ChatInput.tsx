@@ -5,16 +5,10 @@ const spin = keyframes`
   to { transform: rotate(360deg); }
 `;
 
-const pulse = keyframes`
-  0%, 100% { opacity: 0.4; transform: scaleY(0.6); }
-  50% { opacity: 1; transform: scaleY(1); }
-`;
-
 interface Props {
   onSendText: (content: string) => void;
   onSendFile: (file: File, content?: string) => Promise<void>;
   disabled?: boolean;
-  isThinking?: boolean;
   isClosed?: boolean;
   /** Accepted MIME types string e.g. "image/*,application/pdf". Defaults to common types. */
   acceptedFileTypes?: string;
@@ -35,7 +29,6 @@ export const ChatInput: React.FC<Props> = ({
   onSendText,
   onSendFile,
   disabled,
-  isThinking,
   isClosed,
   acceptedFileTypes = DEFAULT_ACCEPT,
 }) => {
@@ -135,17 +128,6 @@ export const ChatInput: React.FC<Props> = ({
 
   return (
     <div className={styles.wrapper}>
-      {isThinking && (
-        <div className={styles.thinkingBar}>
-          <div className={styles.thinkingDots}>
-            <span className={styles.dot(0)} />
-            <span className={styles.dot(1)} />
-            <span className={styles.dot(2)} />
-          </div>
-          <span className={styles.thinkingLabel}>Waiting for response..</span>
-        </div>
-      )}
-
       {pendingFile && (
         <div className={styles.filePreview}>
           {pendingPreview ? (
@@ -288,30 +270,6 @@ const styles = {
     color: var(--wds-muted);
     flex-shrink: 0;
     text-align: center;
-  `,
-  thinkingBar: css`
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 2px 2px;
-  `,
-  thinkingDots: css`
-    display: flex;
-    align-items: center;
-    gap: 3px;
-  `,
-  dot: (i: number) => css`
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: var(--wds-primary);
-    animation: ${pulse} 1.2s ease-in-out infinite;
-    animation-delay: ${i * 0.18}s;
-    display: inline-block;
-  `,
-  thinkingLabel: css`
-    font-size: 11px;
-    color: var(--wds-muted);
   `,
   filePreview: css`
     position: relative;

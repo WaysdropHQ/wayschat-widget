@@ -105,7 +105,6 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config }) => {
     error,
     sendMessage,
     sendFile,
-    isThinking,
     typingActor,
   } = useChat(resolvedConfig);
 
@@ -171,7 +170,6 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config }) => {
             isExpanded={isExpanded}
             status={status}
             error={error}
-            isThinking={isThinking}
             typingActor={typingActor}
             isClosed={isClosed}
             acceptedFileTypes={config.acceptedFileTypes}

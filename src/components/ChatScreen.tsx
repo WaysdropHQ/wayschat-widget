@@ -15,7 +15,6 @@ interface Props {
   status: string;
   error: { code: number; message: string } | null;
   isClosed?: boolean;
-  isThinking: boolean;
   typingActor: Exclude<SupportTypingActor, "USER"> | null;
   acceptedFileTypes?: string;
 }
@@ -30,7 +29,6 @@ export const ChatScreen: React.FC<Props> = ({
   status,
   error,
   isClosed,
-  isThinking,
   typingActor,
   acceptedFileTypes,
 }) => {
@@ -166,7 +164,6 @@ export const ChatScreen: React.FC<Props> = ({
         onSendText={onSendText}
         onSendFile={onSendFile}
         disabled={!connected}
-        isThinking={isThinking}
         isClosed={isClosed}
         acceptedFileTypes={acceptedFileTypes}
       />

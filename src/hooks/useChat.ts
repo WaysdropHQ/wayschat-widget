@@ -27,7 +27,6 @@ export const useChat = (config: ChatConfig) => {
     messages,
     error,
     visitorInfo,
-    isThinking,
     typingActor,
     setStatus,
     setRole,
@@ -37,7 +36,6 @@ export const useChat = (config: ChatConfig) => {
     addMessage,
     setError,
     setVisitorInfo,
-    setIsThinking,
     setTypingActor,
     reset,
     resetChat,
@@ -62,14 +60,12 @@ export const useChat = (config: ChatConfig) => {
     socket.on('support-message-sent', (payload: SupportMessageSentPayload) => {
       setChatId(payload.chatId)
       setChatStatus(null)
-      setIsThinking(true)
       addMessage(payload.message)
     })
 
     socket.on('support-new-message', (payload: SupportNewMessagePayload) => {
       setChatId(payload.chatId)
       setChatStatus(null)
-      setIsThinking(false)
       setTypingActor(null)
       addMessage(payload.message)
     })
@@ -166,7 +162,6 @@ export const useChat = (config: ChatConfig) => {
     messages,
     error,
     visitorInfo,
-    isThinking,
     typingActor,
     setVisitorInfo,
     sendMessage,

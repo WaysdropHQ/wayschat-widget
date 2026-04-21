@@ -122,7 +122,6 @@ export type ChatState = {
   messages: ChatMessage[]
   error: SocketError | null
   visitorInfo: VisitorInfo | null
-  isThinking: boolean
   /** Who (if anyone) is currently typing on the agent side. Null when no typing. */
   typingActor: Exclude<SupportTypingActor, 'USER'> | null
 }

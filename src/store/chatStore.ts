@@ -20,7 +20,6 @@ type ChatActions = {
   addMessage: (message: ChatMessage) => void
   setError: (error: SocketError | null) => void
   setVisitorInfo: (info: VisitorInfo) => void
-  setIsThinking: (val: boolean) => void
   setTypingActor: (actor: TypingActor) => void
   resetChat: () => void
   reset: () => void
@@ -35,7 +34,6 @@ const initialState: ChatState = {
   messages: [],
   error: null,
   visitorInfo: null,
-  isThinking: false,
   typingActor: null,
 }
 
@@ -53,7 +51,6 @@ export const useChatStore = create<ChatState & ChatActions>((set) => ({
     })),
   setError: (error) => set({ error }),
   setVisitorInfo: (info) => set({ visitorInfo: info }),
-  setIsThinking: (val) => set({ isThinking: val }),
   setTypingActor: (actor) => set({ typingActor: actor }),
 
   resetChat: () =>
