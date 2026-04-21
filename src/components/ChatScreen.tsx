@@ -9,6 +9,7 @@ interface Props {
   messages: ChatMessage[];
   onSendText: (content: string) => void;
   onSendFile: (file: File, content?: string) => Promise<void>;
+  onTyping: (isTyping: boolean) => void;
   onBack: () => void;
   onExpand: () => void;
   isExpanded: boolean;
@@ -23,6 +24,7 @@ export const ChatScreen: React.FC<Props> = ({
   messages,
   onSendText,
   onSendFile,
+  onTyping,
   onBack,
   onExpand,
   isExpanded,
@@ -163,6 +165,7 @@ export const ChatScreen: React.FC<Props> = ({
       <ChatInput
         onSendText={onSendText}
         onSendFile={onSendFile}
+        onTyping={onTyping}
         disabled={!connected}
         isClosed={isClosed}
         acceptedFileTypes={acceptedFileTypes}

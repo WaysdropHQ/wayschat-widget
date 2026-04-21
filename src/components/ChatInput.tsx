@@ -1,4 +1,10 @@
-import React, { useState, useRef, useCallback, KeyboardEvent } from "react";
+import React, {
+  useState,
+  useRef,
+  useCallback,
+  useEffect,
+  KeyboardEvent,
+} from "react";
 import { css, keyframes } from "@emotion/css";
 
 const spin = keyframes`
@@ -8,6 +14,7 @@ const spin = keyframes`
 interface Props {
   onSendText: (content: string) => void;
   onSendFile: (file: File, content?: string) => Promise<void>;
+  onTyping?: (isTyping: boolean) => void;
   disabled?: boolean;
   isClosed?: boolean;
   /** Accepted MIME types string e.g. "image/*,application/pdf". Defaults to common types. */
@@ -18,6 +25,7 @@ const DEFAULT_ACCEPT =
   "image/*,video/*,audio/*,application/pdf,.doc,.docx,.xls,.xlsx,.csv,.txt";
 
 const AUTO_GROW_MAX = 160; // px — textarea stops growing after this
+const TYPING_IDLE_MS = 2500;
 
 function autoGrow(el: HTMLTextAreaElement) {
   el.style.height = "auto";
@@ -28,6 +36,7 @@ function autoGrow(el: HTMLTextAreaElement) {
 export const ChatInput: React.FC<Props> = ({
   onSendText,
   onSendFile,
+  onTyping,
   disabled,
   isClosed,
   acceptedFileTypes = DEFAULT_ACCEPT,
@@ -39,11 +48,51 @@ export const ChatInput: React.FC<Props> = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const isTypingRef = useRef(false);
+  const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const onTypingRef = useRef(onTyping);
+  useEffect(() => {
+    onTypingRef.current = onTyping;
+  }, [onTyping]);
+
+  const clearIdleTimer = () => {
+    if (idleTimerRef.current) {
+      clearTimeout(idleTimerRef.current);
+      idleTimerRef.current = null;
+    }
+  };
+
+  const stopTyping = useCallback(() => {
+    clearIdleTimer();
+    if (isTypingRef.current) {
+      isTypingRef.current = false;
+      onTypingRef.current?.(false);
+    }
+  }, []);
+
+  const bumpTyping = useCallback(() => {
+    if (!isTypingRef.current) {
+      isTypingRef.current = true;
+      onTypingRef.current?.(true);
+    }
+    clearIdleTimer();
+    idleTimerRef.current = setTimeout(stopTyping, TYPING_IDLE_MS);
+  }, [stopTyping]);
+
+  useEffect(() => {
+    return () => {
+      // Best-effort: tell the server we've stopped when the composer unmounts.
+      stopTyping();
+    };
+  }, [stopTyping]);
+
   const isLocked = disabled || uploading || !!isClosed;
 
   const handleSend = useCallback(() => {
     const trimmed = value.trim();
     if ((!trimmed && !pendingFile) || isLocked) return;
+
+    stopTyping();
 
     if (pendingFile) {
       setUploading(true);
@@ -65,7 +114,7 @@ export const ChatInput: React.FC<Props> = ({
     }
 
     textareaRef.current?.focus();
-  }, [value, pendingFile, isLocked, onSendText, onSendFile]);
+  }, [value, pendingFile, isLocked, onSendText, onSendFile, stopTyping]);
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && e.shiftKey) {
@@ -79,8 +128,19 @@ export const ChatInput: React.FC<Props> = ({
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setValue(e.target.value);
+    const next = e.target.value;
+    setValue(next);
     autoGrow(e.target);
+    if (isLocked) return;
+    if (next.length === 0) {
+      stopTyping();
+    } else {
+      bumpTyping();
+    }
+  };
+
+  const handleBlur = () => {
+    stopTyping();
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -212,6 +272,7 @@ export const ChatInput: React.FC<Props> = ({
           value={value}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
+          onBlur={handleBlur}
           placeholder="Type a message..."
           disabled={isLocked}
           rows={1}

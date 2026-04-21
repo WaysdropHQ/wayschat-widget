@@ -153,6 +153,16 @@ export const useChat = (config: ChatConfig) => {
     [config, visitorInfo]
   )
 
+  const sendTyping = useCallback(
+    (isTyping: boolean) => {
+      const currentChatId = useChatStore.getState().chatId
+      if (!currentChatId) return
+      const socket = getSocket(config)
+      socket.emit('support-typing', { chatId: currentChatId, isTyping })
+    },
+    [config]
+  )
+
   return {
     status,
     role,
@@ -166,6 +176,7 @@ export const useChat = (config: ChatConfig) => {
     setVisitorInfo,
     sendMessage,
     sendFile,
+    sendTyping,
     resetChat,
   }
 }

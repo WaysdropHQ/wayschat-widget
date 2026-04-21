@@ -105,6 +105,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config }) => {
     error,
     sendMessage,
     sendFile,
+    sendTyping,
     typingActor,
   } = useChat(resolvedConfig);
 
@@ -165,6 +166,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config }) => {
             messages={messages}
             onSendText={sendMessage}
             onSendFile={sendFile}
+            onTyping={sendTyping}
             onBack={() => setView("home")}
             onExpand={() => setIsExpanded((p) => !p)}
             isExpanded={isExpanded}
