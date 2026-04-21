@@ -8,6 +8,7 @@ import type {
   SupportMessageSentPayload,
   SupportNewMessagePayload,
   SupportChatUpdatedPayload,
+  SupportTypingServerPayload,
   SocketError,
   SupportSendMessageDTO,
   VisitorInfo,
@@ -27,6 +28,7 @@ export const useChat = (config: ChatConfig) => {
     error,
     visitorInfo,
     isThinking,
+    typingActor,
     setStatus,
     setRole,
     setVisitorId,
@@ -36,6 +38,7 @@ export const useChat = (config: ChatConfig) => {
     setError,
     setVisitorInfo,
     setIsThinking,
+    setTypingActor,
     reset,
     resetChat,
   } = useChatStore()
@@ -67,7 +70,14 @@ export const useChat = (config: ChatConfig) => {
       setChatId(payload.chatId)
       setChatStatus(null)
       setIsThinking(false)
+      setTypingActor(null)
       addMessage(payload.message)
+    })
+
+    socket.on('support-typing', (payload: SupportTypingServerPayload) => {
+      // Ignore the visitor/user's own typing echo — we only render the other party.
+      if (payload.actor === 'USER') return
+      setTypingActor(payload.isTyping ? payload.actor : null)
     })
 
     socket.on('support-chat-updated', (payload: SupportChatUpdatedPayload) => {
@@ -157,6 +167,7 @@ export const useChat = (config: ChatConfig) => {
     error,
     visitorInfo,
     isThinking,
+    typingActor,
     setVisitorInfo,
     sendMessage,
     sendFile,

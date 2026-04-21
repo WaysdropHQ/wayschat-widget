@@ -9,6 +9,8 @@ import type {
   ConnectionStatus,
 } from '../types'
 
+type TypingActor = ChatState['typingActor']
+
 type ChatActions = {
   setStatus: (status: ConnectionStatus) => void
   setRole: (role: UserRole) => void
@@ -19,6 +21,7 @@ type ChatActions = {
   setError: (error: SocketError | null) => void
   setVisitorInfo: (info: VisitorInfo) => void
   setIsThinking: (val: boolean) => void
+  setTypingActor: (actor: TypingActor) => void
   resetChat: () => void
   reset: () => void
 }
@@ -33,6 +36,7 @@ const initialState: ChatState = {
   error: null,
   visitorInfo: null,
   isThinking: false,
+  typingActor: null,
 }
 
 export const useChatStore = create<ChatState & ChatActions>((set) => ({
@@ -50,6 +54,7 @@ export const useChatStore = create<ChatState & ChatActions>((set) => ({
   setError: (error) => set({ error }),
   setVisitorInfo: (info) => set({ visitorInfo: info }),
   setIsThinking: (val) => set({ isThinking: val }),
+  setTypingActor: (actor) => set({ typingActor: actor }),
 
   resetChat: () =>
     set((state) => ({

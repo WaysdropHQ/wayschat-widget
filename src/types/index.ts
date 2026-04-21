@@ -57,6 +57,14 @@ export type SupportChatUpdatedPayload = {
   }
 }
 
+export type SupportTypingActor = 'USER' | 'ADMIN' | 'WAYSAI'
+
+export type SupportTypingServerPayload = {
+  chatId: string
+  isTyping: boolean
+  actor: SupportTypingActor
+}
+
 export type SocketError = {
   code: number
   message: string
@@ -115,4 +123,6 @@ export type ChatState = {
   error: SocketError | null
   visitorInfo: VisitorInfo | null
   isThinking: boolean
+  /** Who (if anyone) is currently typing on the agent side. Null when no typing. */
+  typingActor: Exclude<SupportTypingActor, 'USER'> | null
 }

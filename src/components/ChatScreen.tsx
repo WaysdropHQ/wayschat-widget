@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { css, keyframes } from "@emotion/css";
-import { ChatMessage } from "../types";
+import { ChatMessage, SupportTypingActor } from "../types";
 import { MessageBubble } from "./MessageBubble";
+import { TypingBubble } from "./TypingBubble";
 import { ChatInput } from "./ChatInput";
 
 interface Props {
@@ -15,6 +16,7 @@ interface Props {
   error: { code: number; message: string } | null;
   isClosed?: boolean;
   isThinking: boolean;
+  typingActor: Exclude<SupportTypingActor, "USER"> | null;
   acceptedFileTypes?: string;
 }
 
@@ -29,6 +31,7 @@ export const ChatScreen: React.FC<Props> = ({
   error,
   isClosed,
   isThinking,
+  typingActor,
   acceptedFileTypes,
 }) => {
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -40,7 +43,7 @@ export const ChatScreen: React.FC<Props> = ({
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, typingActor]);
 
   const handleScroll = () => {
     const el = scrollRef.current;
@@ -132,6 +135,7 @@ export const ChatScreen: React.FC<Props> = ({
           {messages.map((msg) => (
             <MessageBubble key={msg.id} message={msg} />
           ))}
+          {typingActor && !isClosed && <TypingBubble actor={typingActor} />}
           <div ref={bottomRef} />
         </div>
 

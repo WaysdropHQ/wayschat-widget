@@ -106,6 +106,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config }) => {
     sendMessage,
     sendFile,
     isThinking,
+    typingActor,
   } = useChat(resolvedConfig);
 
   const isClosed = chatStatus === "RESOLVED" || chatStatus === "CLOSED";
@@ -171,6 +172,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config }) => {
             status={status}
             error={error}
             isThinking={isThinking}
+            typingActor={typingActor}
             isClosed={isClosed}
             acceptedFileTypes={config.acceptedFileTypes}
           />
