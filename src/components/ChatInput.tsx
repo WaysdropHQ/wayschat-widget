@@ -48,6 +48,18 @@ export const ChatInput: React.FC<Props> = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // On touch devices the virtual keyboard's Enter key should insert a newline,
+  // since there's no Shift+Enter affordance — sending is done via the button.
+  const [isTouch, setIsTouch] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const mq = window.matchMedia("(pointer: coarse)");
+    const update = () => setIsTouch(mq.matches);
+    update();
+    mq.addEventListener?.("change", update);
+    return () => mq.removeEventListener?.("change", update);
+  }, []);
+
   const isTypingRef = useRef(false);
   const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const onTypingRef = useRef(onTyping);
@@ -117,6 +129,8 @@ export const ChatInput: React.FC<Props> = ({
   }, [value, pendingFile, isLocked, onSendText, onSendFile, stopTyping]);
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    // On touch devices, never hijack Enter — let it insert a newline.
+    if (isTouch) return;
     if (e.key === "Enter" && e.shiftKey) {
       // Shift+Enter: insert newline, let textarea grow
       return;
@@ -304,7 +318,9 @@ export const ChatInput: React.FC<Props> = ({
         </button>
       </div>
 
-      <p className={styles.hint}>Enter to send · Shift+Enter for new line</p>
+      {!isTouch && (
+        <p className={styles.hint}>Enter to send · Shift+Enter for new line</p>
+      )}
     </div>
   );
 };
