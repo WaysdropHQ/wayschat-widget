@@ -6,6 +6,7 @@ let socket: Socket | null = null
 export const createSocket = (config: ChatConfig): Socket => {
   if (socket) {
     socket.removeAllListeners()
+    socket.io.removeAllListeners()
     socket.disconnect()
     socket = null
   }
@@ -20,19 +21,24 @@ export const createSocket = (config: ChatConfig): Socket => {
     },
     autoConnect: false,
     reconnection: true,
-    reconnectionAttempts: 10,
-    reconnectionDelay: 1000,
-    reconnectionDelayMax: 8000,
-    timeout: 20000,
+    reconnectionAttempts: Infinity,
+    reconnectionDelay: 500,
+    reconnectionDelayMax: 5000,
+    randomizationFactor: 0.5,
+    timeout: 10000,
   })
 
   return socket
 }
 
+export const getCurrentSocket = (): Socket | null => socket
+
 export const getSocket = (config: ChatConfig): Socket => {
   if (socket?.connected) return socket
   if (socket) {
-    socket.connect()
+    if (!socket.active) {
+      socket.connect()
+    }
     return socket
   }
   return createSocket(config)
@@ -41,6 +47,7 @@ export const getSocket = (config: ChatConfig): Socket => {
 export const destroySocket = (): void => {
   if (socket) {
     socket.removeAllListeners()
+    socket.io.removeAllListeners()
     socket.disconnect()
     socket = null
   }

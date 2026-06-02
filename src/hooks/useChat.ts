@@ -1,5 +1,5 @@
 import { useEffect, useCallback } from 'react'
-import { createSocket, getSocket, destroySocket } from '../lib/socket'
+import { createSocket, getSocket, getCurrentSocket, destroySocket } from '../lib/socket'
 import { saveVisitorId, uploadFile } from '../lib/upload'
 import { useChatStore } from '../store/chatStore'
 import type {
@@ -47,8 +47,14 @@ export const useChat = (config: ChatConfig) => {
     setStatus('connecting')
     socket.connect()
 
+    socket.on('connect', () => {
+      setStatus('connected')
+      setError(null)
+    })
+
     socket.on('connected', (payload: ConnectedPayload) => {
       setStatus('connected')
+      setError(null)
       setRole(payload.role)
 
       if (payload.role === 'VISITOR') {
@@ -92,13 +98,23 @@ export const useChat = (config: ChatConfig) => {
     })
 
     socket.on('disconnect', (reason: string) => {
+      setTypingActor(null)
       if (reason !== 'io client disconnect') {
         setStatus('connecting')
       }
     })
 
-    socket.on('reconnect', () => {
+    socket.io.on('reconnect_attempt', () => {
+      setStatus('connecting')
+    })
+
+    socket.io.on('reconnect', () => {
       setStatus('connected')
+      setError(null)
+    })
+
+    socket.io.on('reconnect_error', () => {
+      setStatus('connecting')
     })
 
     return () => {
@@ -157,10 +173,11 @@ export const useChat = (config: ChatConfig) => {
     (isTyping: boolean) => {
       const currentChatId = useChatStore.getState().chatId
       if (!currentChatId) return
-      const socket = getSocket(config)
+      const socket = getCurrentSocket()
+      if (!socket?.connected) return
       socket.emit('support-typing', { chatId: currentChatId, isTyping })
     },
-    [config]
+    []
   )
 
   return {

@@ -166,7 +166,6 @@ export const ChatScreen: React.FC<Props> = ({
         onSendText={onSendText}
         onSendFile={onSendFile}
         onTyping={onTyping}
-        disabled={!connected}
         isClosed={isClosed}
         acceptedFileTypes={acceptedFileTypes}
       />
