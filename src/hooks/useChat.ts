@@ -1,6 +1,7 @@
 import { useEffect, useCallback } from 'react'
 import { createSocket, getSocket, getCurrentSocket, destroySocket } from '../lib/socket'
 import { saveVisitorId, uploadFile } from '../lib/upload'
+import { toChatMessage } from '../lib/attachments'
 import { useChatStore } from '../store/chatStore'
 import type {
   ChatConfig,
@@ -66,14 +67,14 @@ export const useChat = (config: ChatConfig) => {
     socket.on('support-message-sent', (payload: SupportMessageSentPayload) => {
       setChatId(payload.chatId)
       setChatStatus(null)
-      addMessage(payload.message)
+      addMessage(toChatMessage(payload.message))
     })
 
     socket.on('support-new-message', (payload: SupportNewMessagePayload) => {
       setChatId(payload.chatId)
       setChatStatus(null)
       setTypingActor(null)
-      addMessage(payload.message)
+      addMessage(toChatMessage(payload.message))
     })
 
     socket.on('support-typing', (payload: SupportTypingServerPayload) => {

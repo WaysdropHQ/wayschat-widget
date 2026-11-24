@@ -22,7 +22,55 @@ export type ChatMessage = {
   senderRole: SenderRole
   type: string
   createdAt: string
+  /**
+   * Validated rich attachments (WaysAI bot messages only). Built from the wire
+   * payload by `parseAttachments`; null/absent on every other message and on
+   * servers that predate attachments.
+   */
+  attachments?: ChatAttachment[] | null
 }
+
+/**
+ * A message exactly as the server sends it. `attachments` is untrusted until it
+ * has been through `parseAttachments` (see `toChatMessage`).
+ */
+export type ChatMessageWire = Omit<ChatMessage, 'attachments'> & {
+  attachments?: unknown
+}
+
+// ─── Attachments (B114 contract, support-chat customer view) ─────────────────
+
+/** Integer minor units as a decimal string, e.g. { amountMinor: '250000', currency: 'NGN' }. */
+export type Money = { amountMinor: string; currency: string }
+
+/**
+ * The subset of the server's `ProductCard` the widget renders. Every field
+ * keeps its contract name; URLs have already been restricted to https.
+ */
+export type ChatProductCard = {
+  id: string
+  name: string
+  /** Contract `imageUrl`, falling back to `image`; https only, else null. */
+  imageUrl: string | null
+  price: Money
+  /** Non-null: show `dealPrice` large and `price` struck through. */
+  deal: { discountPct: number; dealPrice: Money } | null
+  inStock: boolean
+  store: { name: string } | null
+  /** Public product page; https only. Null: the card is not a link. */
+  url: string | null
+}
+
+export type ChatProductsAttachment = {
+  type: 'PRODUCTS'
+  /** ISO-8601 UTC instant the prices and stock were read at. */
+  pricedAt: string | null
+  /** 1..10, in display order. */
+  items: ChatProductCard[]
+}
+
+/** Only PRODUCTS is understood today; unknown attachment types are dropped by the parser. */
+export type ChatAttachment = ChatProductsAttachment
 
 // ─── Chat Status ──────────────────────────────────────────────────────────────
 
@@ -39,12 +87,12 @@ export type SupportChatUpdatedAction =
 
 export type SupportMessageSentPayload = {
   chatId: string
-  message: ChatMessage
+  message: ChatMessageWire
 }
 
 export type SupportNewMessagePayload = {
   chatId: string
-  message: ChatMessage
+  message: ChatMessageWire
 }
 
 export type SupportChatUpdatedPayload = {
