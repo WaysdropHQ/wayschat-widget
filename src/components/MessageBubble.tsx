@@ -1,10 +1,18 @@
 import React from 'react'
 import { css } from '@emotion/css'
-import { ChatMessage } from '../types'
+import type { ChatMessage, ChatProductCard } from '../types'
 import { MarkdownRenderer } from './MarkdownRenderer'
+import { ProductCards } from './ProductCards'
 
 function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+}
+
+/** All product cards across a message's attachments, in display order. O(total items). */
+function productsOf(message: ChatMessage): ChatProductCard[] {
+  const out: ChatProductCard[] = []
+  for (const attachment of message.attachments ?? []) out.push(...attachment.items)
+  return out
 }
 
 interface Props {
@@ -14,12 +22,16 @@ interface Props {
 export const MessageBubble: React.FC<Props> = ({ message }) => {
   const isCustomer = message.direction === 'OUTBOUND'
   const isBot = message.senderRole === 'BOT'
+  // Contract: only WaysAI bot messages carry product cards.
+  const products = isBot ? productsOf(message) : []
+  const hasProducts = products.length > 0
+  const hasBubble = !!(message.file || message.content) || !hasProducts
 
   return (
     <div className={styles.row(isCustomer)}>
-      <div className={styles.group(isCustomer)}>
+      <div className={styles.group(isCustomer, hasProducts)}>
         {isBot && <span className={styles.botLabel}>Support</span>}
-        <div className={styles.bubble(isCustomer)}>
+        {hasBubble && <div className={styles.bubble(isCustomer, hasProducts)}>
           {message.file && (
             <a href={message.file} target="_blank" rel="noreferrer" className={styles.fileLink(!!message.content)}>
               📎 View attachment
@@ -30,7 +42,8 @@ export const MessageBubble: React.FC<Props> = ({ message }) => {
               ? <MarkdownRenderer content={message.content} />
               : <p className={styles.text}>{message.content}</p>
           )}
-        </div>
+        </div>}
+        {hasProducts && <ProductCards items={products} />}
         <span className={styles.time}>{formatTime(message.createdAt)}</span>
       </div>
     </div>
@@ -43,10 +56,11 @@ const styles = {
     width: 100%;
     justify-content: ${isCustomer ? 'flex-start' : 'flex-end'};
   `,
-  group: (isCustomer: boolean) => css`
+  group: (isCustomer: boolean, hasProducts: boolean) => css`
     display: flex;
     flex-direction: column;
-    max-width: 78%;
+    /* Product cards need the full row to scroll; the bubble keeps its 78% cap. */
+    ${hasProducts ? 'width: 100%; min-width: 0;' : 'max-width: 78%;'}
     gap: 4px;
     align-items: ${isCustomer ? 'flex-start' : 'flex-end'};
   `,
@@ -57,7 +71,8 @@ const styles = {
     font-weight: 500;
     letter-spacing: 0.03em;
   `,
-  bubble: (isCustomer: boolean) => css`
+  bubble: (isCustomer: boolean, hasProducts: boolean) => css`
+    ${hasProducts ? 'max-width: 78%;' : ''}
     border-radius: 18px;
     padding: 10px 14px;
     word-break: break-word;
