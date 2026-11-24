@@ -54,7 +54,9 @@ export const parseMoney = (value: unknown): Money | null => {
   const { amountMinor, currency } = value
   if (typeof amountMinor !== 'string' || !MINOR_UNITS.test(amountMinor)) return null
   if (typeof currency !== 'string' || !ISO_4217.test(currency)) return null
-  return { amountMinor, currency }
+  const { scale } = value
+  const validScale = typeof scale === 'number' && Number.isInteger(scale) && scale >= 0 && scale <= 4
+  return { amountMinor, currency, scale: validScale ? scale : null }
 }
 
 const parseDeal = (value: unknown): ChatProductCard['deal'] => {

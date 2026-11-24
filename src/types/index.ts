@@ -41,7 +41,8 @@ export type ChatMessageWire = Omit<ChatMessage, 'attachments'> & {
 // ─── Attachments (B114 contract, support-chat customer view) ─────────────────
 
 /** Integer minor units as a decimal string, e.g. { amountMinor: '250000', currency: 'NGN' }. */
-export type Money = { amountMinor: string; currency: string }
+/** `scale`: decimal places of `amountMinor` per the server's table; null on payloads without it. */
+export type Money = { amountMinor: string; currency: string; scale: number | null }
 
 /**
  * The subset of the server's `ProductCard` the widget renders. Every field

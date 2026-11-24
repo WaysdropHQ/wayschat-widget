@@ -33,12 +33,22 @@ export const minorToDecimalString = (amountMinor: string, fractionDigits: number
   return `${padded.slice(0, cut)}.${padded.slice(cut)}`
 }
 
+/**
+ * The decimal point goes where the server's `scale` says (its table can
+ * differ from this runtime's Intl data); Intl's digits only for payloads
+ * without a scale. Display keeps at least the currency's usual digits.
+ */
 export const formatMoney = (money: Money): string => {
   const formatter = currencyFormatter(money.currency)
-  if (!formatter) {
-    // No Intl data for the code: assume 2 fraction digits (the ISO 4217 default).
-    return `${money.currency} ${minorToDecimalString(money.amountMinor, 2)}`
-  }
-  const fractionDigits = formatter.resolvedOptions().maximumFractionDigits ?? 2
-  return formatter.format(Number(minorToDecimalString(money.amountMinor, fractionDigits)))
+  const intlDigits = formatter?.resolvedOptions().maximumFractionDigits ?? 2
+  const scale = money.scale ?? intlDigits
+  const decimal = minorToDecimalString(money.amountMinor, scale)
+  if (!formatter) return `${money.currency} ${decimal}`
+  if (scale === intlDigits) return formatter.format(Number(decimal))
+  return new Intl.NumberFormat(undefined, {
+    style: 'currency',
+    currency: money.currency,
+    minimumFractionDigits: scale,
+    maximumFractionDigits: scale,
+  }).format(Number(decimal))
 }
