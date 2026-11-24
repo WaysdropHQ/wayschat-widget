@@ -84,7 +84,10 @@ export const useChat = (config: ChatConfig) => {
     })
 
     socket.on('support-chat-updated', (payload: SupportChatUpdatedPayload) => {
-      if (chatId && payload.chat.id !== chatId) return
+      // Read the store, not the render-time `chatId`: this handler is bound
+      // once per socket, so a captured value stays stale (null) for good.
+      const currentChatId = useChatStore.getState().chatId
+      if (currentChatId && payload.chat.id !== currentChatId) return
 
       if (RESOLVED_ACTIONS.has(payload.action)) {
         setChatStatus('RESOLVED')
