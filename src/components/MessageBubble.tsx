@@ -1,6 +1,7 @@
 import React from 'react'
 import { css } from '@emotion/css'
 import type { ChatMessage, ChatProductCard } from '../types'
+import { safeFileHref } from '../lib/attachments'
 import { MarkdownRenderer } from './MarkdownRenderer'
 import { ProductCards } from './ProductCards'
 
@@ -25,15 +26,17 @@ export const MessageBubble: React.FC<Props> = ({ message }) => {
   // Contract: only WaysAI bot messages carry product cards.
   const products = isBot ? productsOf(message) : []
   const hasProducts = products.length > 0
-  const hasBubble = !!(message.file || message.content) || !hasProducts
+  // Never link a javascript:/data: (or any non-https, cross-origin) file.
+  const fileHref = safeFileHref(message.file)
+  const hasBubble = !!(fileHref || message.content) || !hasProducts
 
   return (
     <div className={styles.row(isCustomer)}>
       <div className={styles.group(isCustomer, hasProducts)}>
         {isBot && <span className={styles.botLabel}>Support</span>}
         {hasBubble && <div className={styles.bubble(isCustomer, hasProducts)}>
-          {message.file && (
-            <a href={message.file} target="_blank" rel="noreferrer" className={styles.fileLink(!!message.content)}>
+          {fileHref && (
+            <a href={fileHref} target="_blank" rel="noopener noreferrer" className={styles.fileLink(!!message.content)}>
               📎 View attachment
             </a>
           )}

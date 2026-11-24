@@ -49,6 +49,28 @@ export const safeHttpsUrl = (value: unknown): string | null => {
   }
 }
 
+/**
+ * A message file's link target, or null when it must not be linked: only
+ * https, or the page's own origin (relative paths, plain http on localhost).
+ * Blocks javascript:, data:, blob: and the like. An opaque page origin
+ * ('null', sandboxed frames) never counts as same-origin.
+ */
+export const safeFileHref = (
+  value: unknown,
+  pageOrigin: string | null = typeof window === 'undefined' ? null : window.location.origin,
+): string | null => {
+  if (typeof value !== 'string' || value.length === 0 || value.length > MAX_URL_LENGTH) return null
+  const base = pageOrigin && pageOrigin !== 'null' ? pageOrigin : undefined
+  try {
+    const url = new URL(value, base)
+    if (url.protocol === 'https:') return url.href
+    const sameOrigin = base !== undefined && url.protocol === 'http:' && url.origin === base
+    return sameOrigin ? url.href : null
+  } catch {
+    return null
+  }
+}
+
 export const parseMoney = (value: unknown): Money | null => {
   if (!isRecord(value)) return null
   const { amountMinor, currency } = value
